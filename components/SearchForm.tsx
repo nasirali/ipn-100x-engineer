@@ -48,7 +48,7 @@ export default function SearchForm({ onSearch, isLoading }: SearchFormProps) {
         </div>
       </div>
       <p className="mt-3 text-sm text-gray-500">
-        💡 Tip: Try searching for "San Francisco", "Downtown", or a zip code like "94102"
+        💡 Tip: Try searching for &quot;San Francisco&quot;, &quot;Downtown&quot;, or a zip code like &quot;94102&quot;
       </p>
     </form>
   );
