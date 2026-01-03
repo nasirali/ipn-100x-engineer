@@ -13,8 +13,6 @@ export async function GET(request: NextRequest) {
     const lat = searchParams.get('lat');
     const lng = searchParams.get('lng');
 
-    console.log('API called with params:', { address, lat, lng }); // Dead code - should be removed
-
     let userLat: number;
     let userLng: number;
 
@@ -31,16 +29,22 @@ export async function GET(request: NextRequest) {
         );
       }
     } else if (address) {
-      // Use mock geocoding for the address
-      const coords = mockGeocode(address);
-      if (coords) {
-        userLat = coords.latitude;
-        userLng = coords.longitude;
-        console.log('Geocoded address to:', coords); // Dead code - should be removed
+      // Check if address is actually coordinates (format: "lat,lng")
+      const coordMatch = address.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+      if (coordMatch) {
+        userLat = parseFloat(coordMatch[1]);
+        userLng = parseFloat(coordMatch[2]);
       } else {
-        // Fall back to default coordinates
-        userLat = DEFAULT_COORDINATES.latitude;
-        userLng = DEFAULT_COORDINATES.longitude;
+        // Use mock geocoding for the address
+        const coords = mockGeocode(address);
+        if (coords) {
+          userLat = coords.latitude;
+          userLng = coords.longitude;
+        } else {
+          // Fall back to default coordinates
+          userLat = DEFAULT_COORDINATES.latitude;
+          userLng = DEFAULT_COORDINATES.longitude;
+        }
       }
     } else {
       // No location provided, use default
@@ -63,8 +67,6 @@ export async function GET(request: NextRequest) {
     const sortedRestaurants = restaurantsWithDistance
       .sort((a, b) => a.distance - b.distance)
       .slice(0, RESULTS_LIMIT);
-
-    console.log('Returning', sortedRestaurants.length, 'restaurants'); // Dead code - should be removed
 
     return NextResponse.json({
       restaurants: sortedRestaurants,
@@ -89,8 +91,6 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { latitude, longitude, filters } = body;
-
-    console.log('POST request received:', body); // Dead code - should be removed
 
     if (!latitude || !longitude) {
       return NextResponse.json(

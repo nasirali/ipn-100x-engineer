@@ -5,8 +5,6 @@ interface RestaurantCardProps {
 }
 
 export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
-  // console.log('Rendering restaurant:', restaurant.name); // Dead code - should be removed
-
   const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
@@ -37,7 +35,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden card-hover">
       {/* Placeholder image area */}
       <div className="h-40 bg-gradient-to-r from-red-400 to-orange-400 flex items-center justify-center">
         <span className="text-6xl">{getCuisineEmoji(restaurant.cuisine)}</span>
@@ -64,10 +62,15 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
           📍 {restaurant.address}
         </p>
 
-        {/* TODO: Workshop Exercise 1 - Add opening hours display */}
-        {/* The data includes openingHours and closingHours fields */}
-        {/* Display them here with appropriate formatting */}
-        {/* Consider showing "Open Now" or "Closed" status */}
+        {/* Opening Hours Display */}
+        <div className="mb-2 flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            🕐 {formatHours(restaurant.openingHours)} - {formatHours(restaurant.closingHours)}
+          </div>
+          <span className={`text-xs font-semibold px-2 py-1 rounded ${getOpenStatus(restaurant.openingHours, restaurant.closingHours).className}`}>
+            {getOpenStatus(restaurant.openingHours, restaurant.closingHours).text}
+          </span>
+        </div>
 
         <p className="text-sm text-gray-500 line-clamp-2">{restaurant.description}</p>
 
@@ -82,6 +85,27 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
       </div>
     </div>
   );
+}
+
+// Helper function to format hours from 24-hour to 12-hour format
+function formatHours(time: string): string {
+  const [hours, minutes] = time.split(':').map(Number);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+}
+
+// Helper function to determine if restaurant is currently open
+function getOpenStatus(openingHours: string, closingHours: string): { text: string; className: string } {
+  const now = new Date();
+  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+  const isOpen = currentTime >= openingHours && currentTime <= closingHours;
+
+  return {
+    text: isOpen ? 'Open Now' : 'Closed',
+    className: isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+  };
 }
 
 // Helper function to get cuisine emoji

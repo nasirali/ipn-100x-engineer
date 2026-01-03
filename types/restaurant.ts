@@ -11,6 +11,7 @@ export interface Restaurant {
   longitude: number;
   phone: string;
   description: string;
+  distance?: number; // Distance in miles, added by API
 }
 
 export interface SearchParams {

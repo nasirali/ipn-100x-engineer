@@ -1,14 +1,3 @@
-/**
- * TODO: Workshop Exercise 4 - Add unit tests
- *
- * This test file is a skeleton for RestaurantCard component tests.
- * Add meaningful tests for:
- * - Rendering restaurant information
- * - Star rating display
- * - Price range display
- * - Button functionality
- */
-
 import { render, screen } from '@testing-library/react';
 import RestaurantCard from '@/components/RestaurantCard';
 import { Restaurant } from '@/types/restaurant';
@@ -44,10 +33,77 @@ describe('RestaurantCard', () => {
     expect(screen.getByText('4.5')).toBeInTheDocument();
   });
 
-  // TODO: Add more tests
-  // - Test price range display and colors
-  // - Test star rendering for different ratings
-  // - Test address truncation
-  // - Test View Details button
-  // - Test phone button
+  it('displays the price range', () => {
+    render(<RestaurantCard restaurant={mockRestaurant} />);
+    expect(screen.getByText('$$')).toBeInTheDocument();
+  });
+
+  it('shows the address', () => {
+    render(<RestaurantCard restaurant={mockRestaurant} />);
+    expect(screen.getByText(/123 Test Street/)).toBeInTheDocument();
+  });
+
+  it('displays opening hours in 12-hour format', () => {
+    render(<RestaurantCard restaurant={mockRestaurant} />);
+    expect(screen.getByText(/11:00 AM - 10:00 PM/)).toBeInTheDocument();
+  });
+
+  it('shows open/closed status', () => {
+    render(<RestaurantCard restaurant={mockRestaurant} />);
+    // Should show either "Open Now" or "Closed" depending on current time
+    const statusElement = screen.getByText(/Open Now|Closed/);
+    expect(statusElement).toBeInTheDocument();
+  });
+
+  it('displays the description', () => {
+    render(<RestaurantCard restaurant={mockRestaurant} />);
+    expect(screen.getByText('A test restaurant for unit testing')).toBeInTheDocument();
+  });
+
+  it('renders View Details button', () => {
+    render(<RestaurantCard restaurant={mockRestaurant} />);
+    expect(screen.getByText('View Details')).toBeInTheDocument();
+  });
+
+  it('renders phone button with emoji', () => {
+    render(<RestaurantCard restaurant={mockRestaurant} />);
+    expect(screen.getByText('📞')).toBeInTheDocument();
+  });
+
+  it('displays correct cuisine emoji for Italian', () => {
+    render(<RestaurantCard restaurant={mockRestaurant} />);
+    expect(screen.getByText('🍝')).toBeInTheDocument();
+  });
+
+  it('displays correct cuisine emoji for Chinese', () => {
+    const chineseRestaurant = { ...mockRestaurant, cuisine: 'Chinese' };
+    render(<RestaurantCard restaurant={chineseRestaurant} />);
+    expect(screen.getByText('🥡')).toBeInTheDocument();
+  });
+
+  it('renders full stars for whole number ratings', () => {
+    const restaurant = { ...mockRestaurant, rating: 5.0 };
+    render(<RestaurantCard restaurant={restaurant} />);
+    expect(screen.getByText('5.0')).toBeInTheDocument();
+  });
+
+  it('renders half star for decimal ratings', () => {
+    const restaurant = { ...mockRestaurant, rating: 3.5 };
+    render(<RestaurantCard restaurant={restaurant} />);
+    expect(screen.getByText('3.5')).toBeInTheDocument();
+  });
+
+  it('applies correct color for $ price range', () => {
+    const restaurant = { ...mockRestaurant, priceRange: '$' };
+    const { container } = render(<RestaurantCard restaurant={restaurant} />);
+    const priceElement = screen.getByText('$');
+    expect(priceElement).toHaveClass('text-green-600');
+  });
+
+  it('applies correct color for $$$ price range', () => {
+    const restaurant = { ...mockRestaurant, priceRange: '$$$' };
+    const { container } = render(<RestaurantCard restaurant={restaurant} />);
+    const priceElement = screen.getByText('$$$');
+    expect(priceElement).toHaveClass('text-orange-600');
+  });
 });

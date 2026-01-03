@@ -3,25 +3,21 @@
 import { useState } from 'react';
 import SearchForm from '@/components/SearchForm';
 import RestaurantCard from '@/components/RestaurantCard';
+import MapView from '@/components/MapView';
 import { Restaurant } from '@/types/restaurant';
-
-// TODO: Workshop Exercise 5 - Improve UI with better styling
-// Consider adding animations, better loading states, and responsive design improvements
 
 export default function Home() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-
-  // console.log('Home component rendered'); // Dead code - should be removed
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [searchLocation, setSearchLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   const handleSearch = async (location: string) => {
     setLoading(true);
     setError(null);
     setHasSearched(true);
-
-    console.log('Searching for restaurants near:', location); // Dead code - should be removed
 
     try {
       const response = await fetch(`/api/restaurants?address=${encodeURIComponent(location)}`);
@@ -32,7 +28,12 @@ export default function Home() {
       }
 
       setRestaurants(data.restaurants);
-      console.log('Found restaurants:', data.restaurants.length); // Dead code - should be removed
+      if (data.searchLocation) {
+        setSearchLocation({
+          lat: data.searchLocation.latitude,
+          lng: data.searchLocation.longitude,
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setRestaurants([]);
@@ -83,16 +84,43 @@ export default function Home() {
 
           {!loading && restaurants.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                Found {restaurants.length} restaurants near you
-              </h2>
-              {/* TODO: Workshop Exercise 1 - Add opening hours display */}
-              {/* Currently the opening hours are available in the data but not displayed */}
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {restaurants.map((restaurant) => (
-                  <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Found {restaurants.length} restaurants near you
+                </h2>
+                <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${viewMode === 'list'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                  >
+                    📋 List
+                  </button>
+                  <button
+                    onClick={() => setViewMode('map')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${viewMode === 'map'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                  >
+                    🗺️ Map
+                  </button>
+                </div>
               </div>
+
+              {viewMode === 'list' ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-fade-in">
+                  {restaurants.map((restaurant) => (
+                    <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+                  ))}
+                </div>
+              ) : (
+                searchLocation && (
+                  <MapView restaurants={restaurants} center={searchLocation} />
+                )
+              )}
             </div>
           )}
 
@@ -108,9 +136,6 @@ export default function Home() {
             </div>
           )}
         </section>
-
-        {/* TODO: Workshop Exercise 3 - Integrate real maps API */}
-        {/* Add a map view showing restaurant locations */}
       </div>
 
       {/* Footer */}
